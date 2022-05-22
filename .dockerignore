@@ -1,0 +1,5 @@
+redmine/.git
+redmine/.bundle
+redmine/tmp
+redmine/files
+redmine/vendor/bundle
