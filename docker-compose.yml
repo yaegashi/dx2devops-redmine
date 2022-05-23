@@ -6,6 +6,6 @@ services:
       - docker.env
     ports:
       - 8080:8080
-      - 2222:2222
+      - 3333:2222 # 2222 is used by Codespaces
     volumes:
       - ./wwwroot:/home/site/wwwroot
