@@ -19,4 +19,4 @@ COPY docker /docker/
 COPY redmine /redmine/
 
 EXPOSE 8080 2222
-ENTRYPOINT ["/docker/entrypoint.sh"]
+ENTRYPOINT ["/docker/init/entrypoint.sh"]
