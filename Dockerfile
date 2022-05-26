@@ -1,6 +1,7 @@
 FROM ruby:3-bullseye
 
 ENV RAILS_ENV production
+ENV RAILS_LOG_TO_STDOUT true
 ENV BUNDLER_WITHOUT development test
 WORKDIR /redmine
 
