@@ -12,7 +12,7 @@ on the Azure App Service infrastructure.
 [RedMica]: https://github.com/redmica/redmica
 [Azure Web App for Containers]: https://azure.microsoft.com/ja-jp/services/app-service/containers
 
-## Container architecture
+## Container features
 
 ### Application settings / environment variables
 
@@ -134,24 +134,29 @@ Configuration variables:
 
 ## Local development
 
-Use docker-compose to build a container image and test a Redmine app in it:
+Use docker-compose to build a container image and test your Redmine app in it:
 
-1. Place a Redmine app in `redmine` directory.
-You can clone the official repository by eihter of the following commands:
+1. Place Redmine sources in `redmine` directory.
+You can clone it from the official repository by eihter of the following commands:
     * Run `git clone https://github.com/redmine/redmine` for Redmine
     * Run `git clone https://github.com/redmica/redmica redmine` for RedMica
-2. Copy `docker.env.example` to `docker.env`
-3. Run `docker-compose build` to build a container image.
-4. Run `docker-compose up -d` to start a container in the background.
-    * It creates `wwwroot` directory for `/home/site/wwwroot` volume in the container.
-    * It enters the maintenance mode because `RAILS_IN_SERVICE` in `docker.env` is empty.
-5. Do the following initial setups in the container:
-    1. Invoke a shell in the container by either of the following methods:
-        * Run `docker-compose exec redmine /bin/bash`
+2. Copy `docker.env.example` to `docker.env`.
+3. Create `.env` and set `COMPOSE_PROFILES` to one of the supported database profiles (`sqlite`, `mysql`, `mariadb`, `postgres`):
+    ```
+    COMPOSE_PROFILES=sqlite
+    ```
+4. Run `docker-compose build` to build a container image.
+5. Run `docker-compose up -d` to start containers in the background.
+    * The redmine container creates `wwwroot` directory for `/home/site/wwwroot` volume.
+    * The redmine container enters the maintenance mode because `RAILS_IN_SERVICE` is empty in `docker.env`.
+    * The database container creates `db` directory for the data volume.
+6. Do the following initial setups in the container:
+    1. Invoke a shell in the redmine container by either of the following methods:
+        * Run `docker-compose exec redmine-<profile> bash`
         * Run `ssh root@localhost -p 3333`.  The password is `Docker!`.
     2. Run `rake db:migrate` in `/redmine`
     3. Run `rake redmine:plugins:migrate` in `/redmine`
     4. Exit the shell.
-6. Edit `docker.env` and set `RAILS_IN_SERVICE=1`
-7. Run `docker-compose restart` to restart the container.
-8. Open http://localhost:8080 with your web browser to test the Redmine app.
+7. Edit `docker.env` and set `RAILS_IN_SERVICE=1`
+8. Run `docker-compose up -d` again to restart the redmine container.
+9. Open http://localhost:8080 with your web browser to test the Redmine app.
