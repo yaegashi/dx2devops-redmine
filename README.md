@@ -101,30 +101,8 @@ You usually need SSL to connect to public endpoints of Azure database services.
 
 ### Terraform deployment
 
-You can deploy the Redmine app with Terraform definitions in [terraform/test1](terraform/test1):
-
-```
-az login
-cd terraform/test1
-terraform init
-terraform plan
-terraform apply
-```
-
-It deploys the following resources in a single resource group:
-
-- App Service plan
-- App Service instance
-- Azure Database for MariaDB
-
-Configuration variables:
-
-|Variable|Default|Description|
-|---|---|---|
-|`prefix`|`test1`|Name prefix of resources|
-|`location`|`westus2`||
-|`docker_image`|`ghcr.io/yaegashi/dx2devops-redmine/redmica`||
-|`docker_image_tag`|`master-master`||
+Using Terraform definitions in [terraform/test1](terraform/test1),
+you can easily deploy your Redmine app for testing along with dependent resources on Azure.
 
 ## Local development
 
