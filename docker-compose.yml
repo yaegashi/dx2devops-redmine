@@ -1,11 +1,72 @@
-version: '3'
+version: '3.9'
+
+x-redmine: &redmine
+  image: redmine
+  build: .
+  env_file:
+    - docker.env
+  ports:
+    - 8080:8080
+    - 3333:2222 # 2222 is used by Codespaces
+  volumes:
+    - ./wwwroot:/home/site/wwwroot
+
 services:
-  redmine:
-    build: .
-    env_file:
-      - docker.env
-    ports:
-      - 8080:8080
-      - 3333:2222 # 2222 is used by Codespaces
+  redmine-sqlite:
+    <<: *redmine
+    environment:
+      DATABASE_URL: sqlite3:/home/site/wwwroot/redmine.sqlite3
+    profiles: [sqlite]
+
+  redmine-mysql:
+    <<: *redmine
+    environment:
+      DATABASE_URL: mysql2://redmineuser:redminesecret@mysql/redminedb?encoding=utf8mb4
+    depends_on: [mysql]
+    profiles: [mysql]
+
+  redmine-mariadb:
+    <<: *redmine
+    environment:
+      DATABASE_URL: mysql2://redmineuser:redminesecret@mariadb/redminedb?encoding=utf8mb4
+    depends_on: [mariadb]
+    profiles: [mariadb]
+
+  redmine-postgres:
+    <<: *redmine
+    environment:
+      DATABASE_URL: postgresql://redmineuser:redminesecret@postgres/redminedb
+    depends_on: [postgres]
+    profiles: [postgres]
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_USER: redmineuser
+      MYSQL_PASSWORD: redminesecret
+      MYSQL_DATABASE: redminedb
     volumes:
-      - ./wwwroot:/home/site/wwwroot
+      - ./db/mysql:/var/lib/mysql
+    profiles: [mysql]
+
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
+      MARIADB_USER: redmineuser
+      MARIADB_PASSWORD: redminesecret
+      MARIADB_DATABASE: redminedb
+    volumes:
+      - ./db/mariadb:/var/lib/mysql
+    profiles: [mariadb]
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: redmineuser
+      POSTGRES_PASSWORD: redminesecret
+      POSTGRES_DB: redminedb
+    volumes:
+      - ./db/postgres:/var/lib/postgresql/data
+    profiles: [postgres]
