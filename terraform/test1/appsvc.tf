@@ -22,6 +22,14 @@ resource "azurerm_linux_web_app" "appsvc" {
       docker_image_tag = var.docker_image_tag
     }
   }
+  logs {
+    http_logs {
+      file_system {
+        retention_in_mb   = 35
+        retention_in_days = 0
+      }
+    }
+  }
   app_settings = {
     DOCKER_REGISTRY_SERVER_URL          = "https://index.docker.io/v1"
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true"

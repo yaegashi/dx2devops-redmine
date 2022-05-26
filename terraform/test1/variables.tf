@@ -15,5 +15,5 @@ variable "docker_image" {
 
 variable "docker_image_tag" {
   type    = string
-  default = "master-master"
+  default = "latest"
 }
