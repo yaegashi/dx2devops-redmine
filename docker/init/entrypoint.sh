@@ -9,7 +9,7 @@ PLUGINSDIR=$WWWROOT/plugins
 PUBLICTHEMESDIR=$WWWROOT/public/themes
 PUBLICPLUGINASSETSDIR=$WWWROOT/public/plugin_assets
 
-set -eu
+set -e
 
 . /docker/share/functions.sh
 
