@@ -30,7 +30,8 @@ on the Azure App Service infrastructure.
 |---|---|
 |`/redmine/`|Redmine app|
 |`/docker/`|Various DevOps scripts and assets|
-|`/docker/entrypoint.sh`|Container entrypoint|
+|`/docker/do-setup.sh`|Rails initial setup script|
+|`/docker/init/entrypoint.sh`|Container entrypoint script|
 |`/home/site/wwwroot/`|Persistent data|
 |`/home/site/wwwroot/redmine.sqlite3`|Default sqlite3 database in development|
 |`/home/site/wwwroot/staticsite/`|Static site root for the maintenance mode|
@@ -62,8 +63,12 @@ and restart the container to make the Redmine app in service.
 
 ### Manual deployment steps
 
-1. Prepare a database instance for your Redmine app.  Azure Database for MySQL/MariaDB/PostgreSQL are supported.
-2. Create an Azure App Service instance.  Configure a Linux single container app and specify a container image (see below).
+1. Prepare a database instance for your Redmine app.
+Azure Database for MySQL/MariaDB/PostgreSQL are supported.
+2. Create an Azure App Service instance.
+Configure a Linux single container app and specify a container image from the following:
+   - `ghcr.io/yaegashi/dx2devops-redmine/redmine`
+   - `ghcr.io/yaegashi/dx2devops-redmine/redmica`
 3. Specify the following application settings:
     ```
     WEBSITES_ENABLE_APP_SERVICE_STORAGE=true
@@ -74,23 +79,12 @@ and restart the container to make the Redmine app in service.
     ```
 4. Restart the instance.  It gets up and running in the maintenance mode.
 5. Log into the instance using SSH on Azure Portal.
-Run the following commands to set up the database and perform the initial migration:
-    ```
-    cd /redmine
-    rake db:migrate
-    ```
+Run `/docker/do-setup.sh` to set up the database and perform the initial migration:
 6. Set a non-empty string in `RAILS_IN_SERVICE` in the application settings:
     ```
     RAILS_IN_SERVICE=1
     ```
 7. Restart the instance.  This time it starts the rails server and your Redmine app is now in service.
-
-### Public container images
-
-You can use one of the following public images built by the GitHub Actions workflow:
-
-- [ghcr.io/yaegashi/dx2devops-redmine/redmine](https://github.com/yaegashi/dx2devops-redmine/pkgs/container/dx2devops-redmine%2Fredmine)
-- [ghcr.io/yaegashi/dx2devops-redmine/redmica](https://github.com/yaegashi/dx2devops-redmine/pkgs/container/dx2devops-redmine%2Fredmica)
 
 ### Database connection settings
 
@@ -154,8 +148,7 @@ You can clone it from the official repository by eihter of the following command
     1. Invoke a shell in the redmine container by either of the following methods:
         * Run `docker-compose exec redmine-<profile> bash`
         * Run `ssh root@localhost -p 3333`.  The password is `Docker!`.
-    2. Run `rake db:migrate` in `/redmine`
-    3. Run `rake redmine:plugins:migrate` in `/redmine`
+    2. Run `/docker/do-setup.sh`
     4. Exit the shell.
 7. Edit `docker.env` and set `RAILS_IN_SERVICE=1`
 8. Run `docker-compose up -d` again to restart the redmine container.
