@@ -37,6 +37,7 @@ on the Azure App Service infrastructure.
 |`/home/site/wwwroot/staticsite/`|Static site root for the maintenance mode|
 |`/home/site/wwwroot/backups/`|Site backups|
 |`/home/site/wwwroot/files/`|Symlinked from `/redmine/files`|
+|`/home/site/wwwroot/config/*`|Symlinked from `/redmine/config/*`|
 |`/home/site/wwwroot/plugins/*`|Symlinked from `/redmine/plugins/*`|
 |`/home/site/wwwroot/public/themes/*`|Symlinked from `/redmine/public/themes/*`|
 |`/home/site/wwwroot/public/plugin_assets`|Symlinked from `/redmine/public/plugin_assets`|
@@ -58,6 +59,24 @@ and restart the container to make the Redmine app in service.
 
 [az webapp ssh]: https://docs.microsoft.com/en-us/cli/azure/webapp?view=azure-cli-latest#az-webapp-ssh
 [az webapp create-remote-connection]: https://docs.microsoft.com/en-us/cli/azure/webapp?view=azure-cli-latest#az-webapp-create-remote-connection
+
+### Persistent data
+
+In Azure App Service,
+files to preserve should be stored in the persistent storage
+mounted on `/home/site/wwwroot`.
+Any changes outside `/home/site/wwwroot` will be lost when the instance restarts.
+Note that you have to set `WEBSITES_ENABLE_APP_SERVICE_STORAGE=true` in the application settings
+to mount the persistent storage on `/home/site/wwwroot`.
+
+Therefore, in the Redmine containers,
+many files and directories in `/redmine` are symbolic links to ones in `/home/site/wwwroot`.
+Creating links is done by [`/docker/init/entrypoint.sh`](docker/init/entrypoint.sh)
+every time a container boots.
+You can utilize it to inject your instance-specific modifications.
+For example, you can place Redmine plugins in `/home/site/wwwroot/plugins`,
+Redmine themes in `/home/site/wwwroot/public/themes`,
+Rails `configuration.yml` in `/home/site/wwwroot/config/configuration.yml`, and so on.
 
 ## App Service deployment
 
@@ -106,14 +125,16 @@ you can easily deploy your Redmine app for testing along with dependent resource
 
 ## Local development
 
-Use docker-compose to build a container image and test your Redmine app in it:
+[docker-compose.yml](docker-compose.yml) is provided
+so that you can easily build and test Redmine container images.
+Using a devcontainer is also recommended.
 
 1. Place Redmine sources in `redmine` directory.
-You can clone it from the official repository by eihter of the following commands:
+You can clone it from the official repository by either of the following commands:
     * Run `git clone https://github.com/redmine/redmine` for Redmine
     * Run `git clone https://github.com/redmica/redmica redmine` for RedMica
-2. Copy `docker.env.example` to `docker.env`.
-3. Create `.env` and set `COMPOSE_PROFILES` to one of the supported database profiles (`sqlite`, `mysql`, `mariadb`, `postgres`):
+2. Copy file `docker.env.example` to `docker.env`.
+3. Create file `.env` with content like this.  Choose one of the supported database profiles (`sqlite`, `mysql`, `mariadb`, `postgres`).
     ```
     COMPOSE_PROFILES=sqlite
     ```
