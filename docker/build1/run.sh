@@ -4,8 +4,8 @@ set -ex
 
 apt-get update
 apt-get install -y --no-install-recommends \
-    vim ghostscript openssh-server \
-    default-mysql-client-core postgresql-client sqlite3
+    less vim ghostscript openssh-server \
+    default-mysql-client postgresql-client sqlite3
 apt-get clean
 echo "root:Docker!" | chpasswd
 cp /docker/build1/sshd_config /etc/ssh
