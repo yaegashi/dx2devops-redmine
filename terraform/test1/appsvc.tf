@@ -36,7 +36,7 @@ resource "azurerm_linux_web_app" "appsvc" {
     RAILS_IN_SERVICE                    = ""
     RAILS_ENV                           = "production"
     SECRET_KEY_BASE                     = random_password.app-key.result
-    DATABASE_URL                        = "mysql2://${urlencode("dbadmin@${azurerm_mariadb_server.db.name}")}:${urlencode(random_password.db.result)}@${azurerm_mariadb_server.db.fqdn}/${azurerm_mariadb_database.db.name}?encoding=utf8mb4&sslca=/etc/ssl/certs/Baltimore_CyberTrust_Root.pem"
+    DATABASE_URL                        = "mysql2://${urlencode("dbadmin@${azurerm_mariadb_server.db.name}")}:${urlencode(random_password.db.result)}@${azurerm_mariadb_server.db.fqdn}/${azurerm_mariadb_database.db.name}?encoding=utf8mb4&sslverify=true"
   }
 }
 

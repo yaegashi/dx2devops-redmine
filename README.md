@@ -107,16 +107,16 @@ Run `/docker/do-setup.sh` to set up the database and perform the initial migrati
 
 ### Database connection settings
 
-You have to specify the database connection settings in `DATABSE_URL`.
+You have to specify the database connection settings in `DATABASE_URL`.
 See [the guide for configuring a database](https://guides.rubyonrails.org/configuring.html#configuring-a-database) for details.
 
-`DATABSE_URL` example for a MariaDB instance:
+`DATABASE_URL` example for MySQL or MariaDB servers (mysql2 adapter):
 
-    mysql2://username%40servername:password@servername.mariadb.database.azure.com/dbname?encoding=utf8mb4&sslca=/etc/ssl/certs/Baltimore_CyberTrust_Root.pem
+    mysql2://username%40servername:password@servername.mariadb.database.azure.com/dbname?encoding=utf8mb4&sslverify=true
 
-- Note that you have to use `username@servername` for authenticatation.
-- `sslca=/etc/ssl/certs/Baltimore_CyberTrust_Root.pem` is specified to force Rails to connect the database using SSL.
-You usually need SSL to connect to public endpoints of Azure database services.
+- Caveats for Azure Database products:
+    - `username@servername` (URL encoded) for the login name.
+    - `sslverify=true` is required to connect the server using SSL.
 
 ### Terraform deployment
 
