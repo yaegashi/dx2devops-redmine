@@ -2,7 +2,7 @@
 
 set -e
 
-. /docker/share/functions.sh
+. /docker/common/functions.sh
 
 symlinks
 

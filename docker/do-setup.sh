@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /docker/share/functions.sh
+. /docker/common/functions.sh
 
 cd /redmine
 
