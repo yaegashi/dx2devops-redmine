@@ -33,10 +33,12 @@ resource "azurerm_linux_web_app" "appsvc" {
   app_settings = {
     DOCKER_REGISTRY_SERVER_URL          = "https://index.docker.io/v1"
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true"
-    RAILS_IN_SERVICE                    = ""
+    RAILS_IN_SERVICE                    = "false"
     RAILS_ENV                           = "production"
     SECRET_KEY_BASE                     = random_password.app-key.result
-    DATABASE_URL                        = "mysql2://${urlencode("dbadmin@${azurerm_mariadb_server.db.name}")}:${urlencode(random_password.db.result)}@${azurerm_mariadb_server.db.fqdn}/${azurerm_mariadb_database.db.name}?encoding=utf8mb4&sslverify=true"
+    DATABASE_URL                        = "mysql2://${urlencode(local.db_user_name_ext)}:${urlencode(local.db_user_pass)}@${azurerm_mariadb_server.db.fqdn}/${local.db_name}?encoding=utf8mb4&sslverify=true"
+    DB_ADMIN_CMD                        = local.db_admin_cmd
+    DB_USER_CMD                         = local.db_user_cmd
   }
 }
 
