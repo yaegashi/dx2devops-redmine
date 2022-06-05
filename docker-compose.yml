@@ -9,7 +9,7 @@ x-redmine: &redmine
     - 8080:8080
     - 3333:2222 # 2222 is used by Codespaces
   volumes:
-    - ./wwwroot:/home/site/wwwroot
+    - ./data/wwwroot:/home/site/wwwroot
 
 services:
   redmine-sqlite:
@@ -43,30 +43,22 @@ services:
     image: mysql:latest
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
-      MYSQL_USER: redmineuser
-      MYSQL_PASSWORD: redminesecret
-      MYSQL_DATABASE: redminedb
     volumes:
-      - ./db/mysql:/var/lib/mysql
+      - ./data/mysql:/var/lib/mysql
     profiles: [mysql]
 
   mariadb:
     image: mariadb:latest
     environment:
       MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
-      MARIADB_USER: redmineuser
-      MARIADB_PASSWORD: redminesecret
-      MARIADB_DATABASE: redminedb
     volumes:
-      - ./db/mariadb:/var/lib/mysql
+      - ./data/mariadb:/var/lib/mysql
     profiles: [mariadb]
 
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_USER: redmineuser
-      POSTGRES_PASSWORD: redminesecret
-      POSTGRES_DB: redminedb
+      POSTGRES_PASSWORD: supersecret
     volumes:
-      - ./db/postgres:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     profiles: [postgres]
