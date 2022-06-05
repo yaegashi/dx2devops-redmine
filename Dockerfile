@@ -15,8 +15,9 @@ COPY redmine/Gemfile* /redmine/
 RUN /docker/build2/run.sh
 
 # Copy all files
-COPY docker /docker/
 COPY redmine /redmine/
+COPY docker /docker/
+RUN ln -sf /docker/rmops /usr/local/bin
 
 EXPOSE 8080 2222
-ENTRYPOINT ["/docker/init/entrypoint.sh"]
+ENTRYPOINT ["rmops", "entrypoint"]

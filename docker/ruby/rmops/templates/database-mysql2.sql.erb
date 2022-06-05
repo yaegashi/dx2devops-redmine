@@ -1,0 +1,8 @@
+-- Database URL: <%= uri %>
+-- Run the following command to connect to the database host as a super user:
+-- mysql -vv -u root -p -h <%= db.host %> <%= db.ssl ? '--ssl' : '' %>
+DROP DATABASE IF EXISTS `<%= db.name %>`;
+DROP USER IF EXISTS '<%= db.user %>'@'%';
+CREATE USER '<%= db.user %>'@'%' IDENTIFIED BY '<%= db.pass %>';
+CREATE DATABASE IF NOT EXISTS `<%= db.name %>` DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_520_ci`;
+GRANT SELECT, LOCK TABLES, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, REFERENCES ON `<%= db.name %>`.* TO '<%= db.user %>'@'%';
