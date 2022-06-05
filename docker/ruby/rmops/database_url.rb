@@ -26,6 +26,10 @@ class RMOps::DatabaseURL
     else
       raise "Unsupported database type: '#{db.type}'"
     end
+    if @db.host =~ /\.database\.azure\.com$/
+      # For Azure database products, the user name in SQL should be without '@host'
+      @db.user.sub!(/@[^@]*$/, '')
+    end
     @templates_dir = path
   end
 

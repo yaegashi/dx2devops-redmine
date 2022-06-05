@@ -1,6 +1,6 @@
 -- Database URL: <%= uri %>
--- Run the following command to connect to the database host as a super user:
--- mysql -vv -u root -p -h <%= db.host %> <%= db.ssl ? '--ssl' : '' %>
+-- Run the following command to connect to the database host as an admin user:
+-- mysql -vv -u <admin-user> -p -h <%= db.host %> <%= db.ssl ? '--ssl' : '' %>
 DROP DATABASE IF EXISTS `<%= db.name %>`;
 DROP USER IF EXISTS '<%= db.user %>'@'%';
 CREATE USER '<%= db.user %>'@'%' IDENTIFIED BY '<%= db.pass %>';
