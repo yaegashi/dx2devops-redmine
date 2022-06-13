@@ -22,6 +22,7 @@ services:
     <<: *redmine
     environment:
       DATABASE_URL: mysql2://redmineuser:redminesecret@mysql/redminedb?encoding=utf8mb4
+      DB_ADMIN_CMD: mysql -vv -u root -h mysql
     depends_on: [mysql]
     profiles: [mysql]
 
@@ -29,6 +30,7 @@ services:
     <<: *redmine
     environment:
       DATABASE_URL: mysql2://redmineuser:redminesecret@mariadb/redminedb?encoding=utf8mb4
+      DB_ADMIN_CMD: mysql -vv -u root -h mariadb
     depends_on: [mariadb]
     profiles: [mariadb]
 
@@ -36,6 +38,7 @@ services:
     <<: *redmine
     environment:
       DATABASE_URL: postgresql://redmineuser:redminesecret@postgres/redminedb
+      DB_ADMIN_CMD: psql -e postgresql://postgres:adminsecret@postgres
     depends_on: [postgres]
     profiles: [postgres]
 
@@ -58,7 +61,7 @@ services:
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_PASSWORD: supersecret
+      POSTGRES_PASSWORD: adminsecret
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     profiles: [postgres]
