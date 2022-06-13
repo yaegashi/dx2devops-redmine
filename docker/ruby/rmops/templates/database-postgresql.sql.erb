@@ -1,7 +1,7 @@
 -- Database URL: <%= uri %>
 -- Run the following command to connect to the database host as an admin user:
 -- psql -U <admin-user> -h <%= db.host %>
-DROP ROLE IF EXISTS <%= db.user %>;
 DROP DATABASE IF EXISTS <%= db.name %>;
+DROP ROLE IF EXISTS <%= db.user %>;
 CREATE ROLE <%= db.user %> LOGIN ENCRYPTED PASSWORD '<%= db.pass %>' NOINHERIT VALID UNTIL 'infinity';
 CREATE DATABASE <%= db.name %> WITH ENCODING='UTF8' OWNER=<%= db.user %> TEMPLATE template0;
