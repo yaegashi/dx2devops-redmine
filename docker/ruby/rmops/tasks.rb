@@ -1,3 +1,4 @@
+require 'io/console'
 require 'tmpdir'
 
 module RMOps::Tasks
@@ -106,6 +107,36 @@ module RMOps::Tasks
     end
   end
 
+  def dbinit(url)
+    userurl = RMOps::DatabaseURL.new(url)
+    sql = userurl.generate_dbsql
+
+    print 'Enter DB admin username: '
+    adminuser = CGI.escape(STDIN.gets.chomp)
+    print 'Enter DB admin password: '
+    adminpass = CGI.escape(STDIN.noecho(&:gets).chomp)
+    puts
+    adminurl = RMOps::DatabaseURL.new(url, user: adminuser, pass: adminpass)
+    args = adminurl.generate_cliadmin
+
+    logger.info 'Create database'
+    logger.info "Run #{args.inspect}"
+    IO.popen(adminurl.env, args, 'w', exception: true) do |io|
+      io.print(sql)
+    end
+
+    raise 'Failed database initialization' unless $?.success?
+
+    logger.info 'Done database initialization'
+  end
+
+  def dbcli(url)
+    userurl = RMOps::DatabaseURL.new(url)
+    args = userurl.generate_cliuser
+    logger.info "Run #{args.inspect}"
+    system(userurl.env, *args, exception: true)
+  end
+
   def dump(name)
     name += '.tgz' unless name.end_with?('.tar.gz', '.tgz')
     tgzpath = File.expand_path(name, BACKUPS_DIR)
@@ -116,7 +147,7 @@ module RMOps::Tasks
       args = dburl.generate_dump
       logger.info "Dump database to #{dbdump}"
       logger.info "Run #{args.inspect}"
-      system(dburl.env, args[0], *args[1..], exception: true, out: dbdump)
+      system(dburl.env, *args, exception: true, out: dbdump)
       symlink(STATICSITE_DIR, File.join(dir, 'staticsite'))
       symlink(FILES_DIR, File.join(dir, 'files'))
       symlink(CONFIG_DIR, File.join(dir, 'config'))
@@ -145,7 +176,7 @@ module RMOps::Tasks
       args = dburl.generate_restore
       logger.info "Restore database from #{dbdump}"
       logger.info "Run #{args.inspect}"
-      system(dburl.env, args[0], *args[1..], exception: true, in: dbdump)
+      system(dburl.env, *args, exception: true, in: dbdump)
       logger.info "Done restore from #{tgzpath}"
     end
   end

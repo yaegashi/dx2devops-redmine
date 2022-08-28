@@ -1,5 +1,5 @@
 class RMOps::CLI
-  desc 'restore', 'Restore a site from backup'
+  desc 'restore', 'Restore site from backup'
   def restore(name)
     raise 'No backup specified' if name.to_s.empty?
 

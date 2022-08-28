@@ -1,5 +1,5 @@
 class RMOps::CLI
-  desc 'dump', 'Dump a site to backpu'
+  desc 'dump', 'Dump site to backup'
   def dump(name)
     raise 'No backup specified' if name.to_s.empty?
 
