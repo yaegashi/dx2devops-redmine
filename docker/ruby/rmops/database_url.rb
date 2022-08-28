@@ -51,14 +51,18 @@ class RMOps::DatabaseURL
   end
 
   def generate_sql
-    self.generate("database-#{db.type}.sql.erb")
+    generate("database-#{db.type}.sql.erb")
   end
 
-  def genecate_cli
-    self.generate("cli-#{db.type}.args.erb").split
+  def generate_cli
+    generate("cli-#{db.type}.args.erb").split
   end
 
   def generate_dump
-    self.generate("dump-#{db.type}.args.erb").split
+    generate("dump-#{db.type}.args.erb").split
+  end
+
+  def generate_restore
+    generate("restore-#{db.type}.args.erb").split
   end
 end

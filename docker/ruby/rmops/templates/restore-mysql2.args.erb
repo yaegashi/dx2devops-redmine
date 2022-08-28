@@ -1,0 +1,11 @@
+mysql
+<% if db.ssl %>
+--ssl
+<% end %>
+-h
+<%= db.host %>
+-P
+<%= db.port %>
+-u
+<%= db.uri_user %>
+<%= db.name %>

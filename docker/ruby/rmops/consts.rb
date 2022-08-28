@@ -15,9 +15,9 @@ module RMOps::Consts
   FILES_DIR = File.join(WWWROOT_DIR, 'files')
   CONFIG_DIR = File.join(WWWROOT_DIR, 'config')
   PLUGINS_DIR = File.join(WWWROOT_DIR, 'plugins')
+  PUBLIC_DIR = File.join(WWWROOT_DIR, 'public')
   PUBLIC_THEMES_DIR = File.join(WWWROOT_DIR, 'public/themes')
   PUBLIC_PLUGIN_ASSETS_DIR = File.join(WWWROOT_DIR, 'public/plugin_assets')
-  ADMIN_PASSWORD_FILE = File.join(WWWROOT_DIR, 'admin_password.txt')
   DATABASE_URL = ENV['DATABASE_URL']
   RAILS_IN_SERVICE = make_bool(ENV['RAILS_IN_SERVICE'])
 end

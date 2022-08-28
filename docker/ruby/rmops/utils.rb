@@ -20,6 +20,11 @@ module RMOps::Utils
     FileUtils.symlink(src, dst, **opts)
   end
 
+  def copytree(src, dst, **opts)
+    logger.info "Copy #{src.inspect} to #{dst.inspect}"
+    FileUtils.cp_r(src, dst, **opts)
+  end
+
   def rmtree(list, **opts)
     logger.info "Remove #{list}"
     FileUtils.rmtree(list, **opts)

@@ -1,3 +1,5 @@
+require 'tmpdir'
+
 module RMOps::Tasks
   extend RMOps::Tasks
   include RMOps::Consts
@@ -6,7 +8,8 @@ module RMOps::Tasks
   def self.create_symlinks
     enter_dir do
       rmtree(['files', 'public/plugin_assets'])
-      makedirs([FILES_DIR, PUBLIC_PLUGIN_ASSETS_DIR])
+      makedirs([FILES_DIR, CONFIG_DIR, PLUGINS_DIR, PUBLIC_THEMES_DIR, PUBLIC_PLUGIN_ASSETS_DIR, STATICSITE_DIR,
+                BACKUPS_DIR])
       symlink(FILES_DIR, './files', force: true)
       symlink(PUBLIC_PLUGIN_ASSETS_DIR, './public/plugin_assets', force: true)
       Dir.glob(File.join(PLUGINS_DIR, '*')).each do |path|
@@ -95,12 +98,55 @@ module RMOps::Tasks
     else
       index_file = File.join(STATICSITE_DIR, 'index.html')
       unless File.exist?(index_file)
-        makedirs(STATICSITE_DIR)
         File.open(index_file, 'w') do |file|
           file.puts 'Maintenance mode'
         end
       end
       run "ruby -run -e httpd #{STATICSITE_DIR} -p 8080"
+    end
+  end
+
+  def dump(name)
+    name += '.tgz' unless name.end_with?('.tar.gz', '.tgz')
+    tgzpath = File.expand_path(name, BACKUPS_DIR)
+
+    Dir.mktmpdir do |dir|
+      dbdump = File.join(dir, 'db.dump')
+      dburl = RMOps::DatabaseURL.new(DATABASE_URL)
+      args = dburl.generate_dump
+      logger.info "Dump database to #{dbdump}"
+      logger.info "Run #{args.inspect}"
+      system(dburl.env, args[0], *args[1..], exception: true, out: dbdump)
+      symlink(STATICSITE_DIR, File.join(dir, 'staticsite'))
+      symlink(FILES_DIR, File.join(dir, 'files'))
+      symlink(CONFIG_DIR, File.join(dir, 'config'))
+      symlink(PLUGINS_DIR, File.join(dir, 'plugins'))
+      symlink(PUBLIC_DIR, File.join(dir, 'public'))
+      run "tar -C #{dir} -f #{tgzpath} -czvvh --owner root --group root --mode a+rX,og-w ."
+      logger.info "Done dump to #{tgzpath}"
+    end
+  end
+
+  def restore(name)
+    name += '.tgz' unless name.end_with?('.tar.gz', '.tgz')
+    tgzpath = File.expand_path(name, BACKUPS_DIR)
+    raise "Backup not found: #{name}" unless File.exist? tgzpath
+
+    Dir.mktmpdir do |dir|
+      run "tar -C #{dir} -f #{tgzpath} -xzvv --no-same-owner --no-same-permissions"
+      rmtree([STATICSITE_DIR, FILES_DIR, CONFIG_DIR, PLUGINS_DIR, PUBLIC_DIR])
+      copytree(File.join(dir, 'staticsite'), STATICSITE_DIR)
+      copytree(File.join(dir, 'files'), FILES_DIR)
+      copytree(File.join(dir, 'config'), CONFIG_DIR)
+      copytree(File.join(dir, 'plugins'), PLUGINS_DIR)
+      copytree(File.join(dir, 'public'), PUBLIC_DIR)
+      dbdump = File.join(dir, 'db.dump')
+      dburl = RMOps::DatabaseURL.new(DATABASE_URL)
+      args = dburl.generate_restore
+      logger.info "Restore database from #{dbdump}"
+      logger.info "Run #{args.inspect}"
+      system(dburl.env, args[0], *args[1..], exception: true, in: dbdump)
+      logger.info "Done restore from #{tgzpath}"
     end
   end
 end
