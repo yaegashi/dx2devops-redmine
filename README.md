@@ -113,7 +113,7 @@ Configure a Linux single container app and specify a container image from the fo
     ```
 4. Restart the instance.  It gets up and running in the maintenance mode.
 5. Log into the instance using SSH on Azure Portal.
-    - Run `rmops sql` to generate SQL statement to initialize the database:
+    - Run `rmops sql` to see the SQL statement to initialize the database:
         ```console
         root@6228b40cf3a8:~# rmops sql
         -- Database URL: mysql2://test1_7ee9e7cf%40test1-7ee9e7cf:CI8zeEf5r2%24%26%28r%249zQvNSA2%3EYh3lq7%7B7@test1-7ee9e7cf.mariadb.database.azure.com/test1_7ee9e7cf?encoding=utf8mb4&sslverify=true
@@ -125,10 +125,14 @@ Configure a Linux single container app and specify a container image from the fo
         CREATE DATABASE IF NOT EXISTS `test1_7ee9e7cf` DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_520_ci`;
         GRANT SELECT, LOCK TABLES, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, REFERENCES ON `test1_7ee9e7cf`.* TO 'test1_7ee9e7cf'@'%';
         ```
-      You have to enter the SQL into your database server using the standard client like `mysql` or `psql`:
+      Run `rmops dbinit` to initialize the database.  You will be asked for username and password of the DB admin.
         ```console
-        root@6228b40cf3a8:~# rmops sql | mysql -vv -u db_admin@test1-7ee9e7cf -p -h test1-7ee9e7cf.mariadb.database.azure.com --ssl
-        Password: <- Enter db_admin@test1-7ee9e7cf password
+        root@6228b40cf3a8:~# rmops dbinit
+        Enter DB admin username: admin@test1-7ee9e7cf
+        Enter DB admin password: 
+        I, [2022-08-28T20:18:02.482132 #20]  INFO -- : Create database
+        I, [2022-08-28T20:18:02.482529 #20]  INFO -- : Run ["mysql", "-h", "test1-7ee9e7cf.mariadb.database.azure.com", "-P", "3306", "-u", "admin@test1-7ee9e7cf"]
+        I, [2022-08-28T20:18:02.640372 #20]  INFO -- : Done database initialization
         ```
     - Run `rmops setup` to run the database migration and do the initial setup of the Redmine app.
       It will show initial password for `admin` user at last.  Don't forget to note this.
@@ -182,8 +186,8 @@ Choose one of the supported profiles: `sqlite`, `mysql`, `mariadb`, `postgres`.
     1. Invoke a shell in the redmine container by either of the following methods:
         * Run `docker-compose exec redmine-<profile> bash`
         * Run `ssh root@localhost -p 3333`.  The password is `Docker!`.
-    2. Run `rmops sql | $DB_ADMIN_CMD`
-    3. Run `rmops setup`.  Note the admin user's password.
+    2. Run `rmops dbinit`.  The password is `secret`.
+    3. Run `rmops setup`.  Redmine admin's password will be shown.
     4. Exit from the shell.
 7. Update `RAILS_IN_SERVICE=true` in `docker.env`.
 8. Run `docker-compose up -d` again to restart the redmine container.
@@ -196,13 +200,15 @@ Choose one of the supported profiles: `sqlite`, `mysql`, `mariadb`, `postgres`.
 - Support persistent storage (uploaded files, themes, plugins, etc.)
 - Support SSH remote shell and maintenance mode
 - `rmops` maintenance commands
-    - Generate SQL to initialize a database
-    - Database migration and initial setupnitial setup
-    - Reset user password
+    - dbcli: Launch database client
+    - dbsql: Generate SQL to initialize database
+    - dbinit: Database initialization
+    - setup: Redmine initial setup
+    - passwd: Redmine user password reset
+    - dump: Dump to backup
+    - restore: Restore from backup
 
 ### Todo
 
 - Support sending emails from the App Service environment
 - Support EasyAuth integration to Redmine user authentication
-- `rmops` features
-    - Backup/restore
