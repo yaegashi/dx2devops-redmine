@@ -1,0 +1,14 @@
+pg_dump
+--clean
+--if-exists
+<% if db.ssl %>
+--sslmode
+<%= db.params['sslmode'] %>
+<% end %>
+-h
+<%= db.host %>
+-p
+<%= db.port %>
+-U
+<%= db.uri_user%>
+<%= db.name %>
