@@ -96,6 +96,21 @@ module RMOps::Tasks
         File.unlink('tmp/pid/server.pid') if File.exist?('tmp/pid/server.pid')
         run 'rails server -b 0.0.0.0 -p 8080'
       end
+    elsif WHOAMI_DEBUG
+      require 'webrick'
+      require 'stringio'
+      s = WEBrick::HTTPServer.new(Port: 8080)
+      s.mount_proc('/') do |req, res|
+        res.status = 200
+        res['Content-Type'] = 'text/plain'
+        res.body = StringIO.new
+        res.body.puts "self: #{req.addr.inspect}"
+        res.body.puts "peer: #{req.peeraddr.inspect}"
+        res.body.puts "#{req.request_method} #{req.unparsed_uri}"
+        res.body.puts req.raw_header.join
+        res.body.rewind
+      end
+      s.start
     else
       index_file = File.join(STATICSITE_DIR, 'index.html')
       unless File.exist?(index_file)
@@ -103,7 +118,9 @@ module RMOps::Tasks
           file.puts 'Maintenance mode'
         end
       end
-      run "ruby -run -e httpd #{STATICSITE_DIR} -p 8080"
+      require 'webrick'
+      s = WEBrick::HTTPServer.new(Port:8080, DocumentRoot: STATICSITE_DIR)
+      s.start
     end
   end
 
