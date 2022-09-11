@@ -1,0 +1,106 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2021-09-09/uiFormDefinition.schema.json",
+  "view": {
+    "kind": "Form",
+    "properties": {
+      "title": "Redmine App Deployment",
+      "steps": [
+        {
+          "name": "basics",
+          "label": "Basics",
+          "elements": [
+            {
+              "name": "description",
+              "type": "Microsoft.Common.Section",
+              "label": "Introduction",
+              "elements": [
+                {
+                  "name": "description-body",
+                  "type": "Microsoft.Common.TextBlock",
+                  "visible": true,
+                  "options": {
+                    "text": "Deploy Redmine App"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "resourceScope",
+              "type": "Microsoft.Common.ResourceScope",
+              "location": {
+                "resourceTypes": [
+                  "microsoft.resources/resourcegroups"
+                ]
+              }
+            },
+            {
+              "name": "appName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "App Name",
+              "defaultValue": "",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-z0-9][a-z0-9-]+[a-z0-9]$",
+                "validationMessage": "DNS alphanumeric hostname"
+              },
+              "visible": true
+            },
+            {
+              "name": "appImage",
+              "type": "Microsoft.Common.TextBox",
+              "label": "App Image",
+              "defaultValue": "ghcr.io/yaegashi/dx2devops-redmine/redmica:v2.1.0-master",
+              "constraints": {
+                "required": true
+              },
+              "visible": true
+            },
+            {
+              "name": "appPlan",
+              "type": "Microsoft.Solutions.ResourceSelector",
+              "label": "App Service Plan",
+              "resourceType": "Microsoft.Web/serverfarms",
+              "options": {
+                "filter": {
+                  "subscription": "onBasics"
+                }
+              }
+            },
+            {
+              "name": "appAuthClientId",
+              "type": "Microsoft.Common.TextBox",
+              "label": "App Auth Client ID",
+              "visible": true
+            },
+            {
+              "name": "identity",
+              "type": "Microsoft.ManagedIdentity.IdentitySelector",
+              "label": "Managed Identity",
+              "defaultValue": {
+                "systemAssignedIdentity": "OffOnly"
+              },
+              "options": {
+                "hideSystemAssignedIdentity": true,
+                "hideUserAssignedIdentity": false
+              },
+              "visible": true
+            }
+          ]
+        }
+      ]
+    },
+    "outputs": {
+      "parameters": {
+        "appName": "[steps('basics').appName]",
+        "appImage": "[steps('basics').appImage]",
+        "appPlanId": "[steps('basics').appPlan.id]",
+        "appAuthClientId": "[steps('basics').appAuthClientId]",
+        "identity": "[steps('basics').identity]",
+        "location": "[steps('basics').resourceScope.location.name]"
+      },
+      "kind": "ResourceGroup",
+      "location": "[steps('basics').resourceScope.location.name]",
+      "resourceGroupId": "[steps('basics').resourceScope.resourceGroup.id]"
+    }
+  }
+}
