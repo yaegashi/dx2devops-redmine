@@ -112,9 +112,9 @@ module RMOps::Tasks
     sql = userurl.generate_dbsql
 
     print 'Enter DB admin username: '
-    adminuser = CGI.escape(STDIN.gets.chomp)
+    adminuser = STDIN.gets.chomp
     print 'Enter DB admin password: '
-    adminpass = CGI.escape(STDIN.noecho(&:gets).chomp)
+    adminpass = STDIN.noecho(&:gets).chomp
     puts
     adminurl = RMOps::DatabaseURL.new(url, user: adminuser, pass: adminpass)
     args = adminurl.generate_cliadmin

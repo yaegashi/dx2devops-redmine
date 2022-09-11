@@ -23,7 +23,9 @@ class RMOps::DatabaseURL
     @db.env = {}
     if @db.host =~ /\.database\.azure\.com$/
       # For Azure database products, the user name in SQL should be without '@host'
-      @db.user.sub!(/@[^@]*$/, '')
+      suffix = "@#{@db.host.sub(/\..*/, '')}"
+      @db.user = @db.user.delete_suffix(suffix)
+      @db.uri_user += suffix unless @db.uri_user.end_with?(suffix)
     end
     case @db.type
     when 'mysql2'
