@@ -36,6 +36,7 @@ class RMOps::DatabaseURL
       @db.ssl = %w[require verify-ca verify-full].include?(@db.params['sslmode'])
       @db.port ||= 5432
       @db.env['PGPASSWORD'] = @db.pass unless @db.pass.to_s.empty?
+      @db.env['PGSSLMODE'] = @db.params['sslmode'] if @db.ssl
     else
       raise "Unsupported database type: '#{db.type}'"
     end

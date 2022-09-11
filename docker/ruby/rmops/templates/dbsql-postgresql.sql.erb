@@ -4,4 +4,5 @@
 DROP DATABASE IF EXISTS <%= db.name %>;
 DROP ROLE IF EXISTS <%= db.user %>;
 CREATE ROLE <%= db.user %> LOGIN ENCRYPTED PASSWORD '<%= db.pass %>' NOINHERIT VALID UNTIL 'infinity';
+GRANT <%= db.user %> TO current_user;
 CREATE DATABASE <%= db.name %> WITH ENCODING='UTF8' OWNER=<%= db.user %> TEMPLATE template0;
