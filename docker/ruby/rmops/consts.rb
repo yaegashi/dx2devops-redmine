@@ -19,6 +19,7 @@ module RMOps::Consts
   PUBLIC_THEMES_DIR = File.join(WWWROOT_DIR, 'public/themes')
   PUBLIC_PLUGIN_ASSETS_DIR = File.join(WWWROOT_DIR, 'public/plugin_assets')
   DATABASE_URL = ENV['DATABASE_URL']
+  DATABASE_FLEXIBLE = make_bool(ENV['DATABASE_FLEXIBLE'])
   RAILS_IN_SERVICE = make_bool(ENV['RAILS_IN_SERVICE'])
   WHOAMI_DEBUG = make_bool(ENV['WHOAMI_DEBUG'])
 end

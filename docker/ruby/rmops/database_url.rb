@@ -5,7 +5,7 @@ require 'tempfile'
 
 class RMOps::DatabaseURL
   TEMPLATES_DIR = File.expand_path('templates', __dir__)
-  DBSpec = Struct.new(:type, :uri_user, :user, :pass, :host, :port, :name, :params, :ssl, :env)
+  DBSpec = Struct.new(:type, :uri_user, :user, :pass, :host, :port, :name, :params, :ssl, :flexible, :env)
 
   attr_reader :uri, :db, :templates_dir
 
@@ -20,9 +20,10 @@ class RMOps::DatabaseURL
     @db.port = opts[:port] || @uri.port
     @db.name = opts[:name] || @uri.path[1..]
     @db.params = opts[:params] || URI.decode_www_form(@uri.query.to_s).to_h
+    @db.flexible = opts.fetch(:flexible, RMOps::Consts::DATABASE_FLEXIBLE)
     @db.env = {}
-    if @db.host =~ /\.database\.azure\.com$/
-      # For Azure database products, the user name in SQL should be without '@host'
+    if !@db.flexible && @db.host =~ /\.database\.azure\.com$/
+      # Fix user name for Azure database single server products
       suffix = "@#{@db.host.sub(/\..*/, '')}"
       @db.user = @db.user.delete_suffix(suffix)
       @db.uri_user += suffix unless @db.uri_user.end_with?(suffix)
