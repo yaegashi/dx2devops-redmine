@@ -14,8 +14,8 @@ class RMOps::DatabaseURL
     @uri = URI.parse(url)
     @db = DBSpec.new
     @db.type = opts[:type] || @uri.scheme
-    @db.user = @db.uri_user = opts[:user] || CGI.unescape(@uri.user)
-    @db.pass = opts[:pass] || CGI.unescape(@uri.password)
+    @db.user = @db.uri_user = opts[:user] || CGI.unescape(@uri.user.to_s)
+    @db.pass = opts[:pass] || CGI.unescape(@uri.password.to_s)
     @db.host = opts[:host] || @uri.host
     @db.port = opts[:port] || @uri.port
     @db.name = opts[:name] || @uri.path[1..]
@@ -29,6 +29,7 @@ class RMOps::DatabaseURL
       @db.uri_user += suffix unless @db.uri_user.end_with?(suffix)
     end
     case @db.type
+    when 'sqlite3'
     when 'mysql2'
       @db.ssl = !@db.params.keys.grep(/^ssl/).empty?
       @db.port ||= 3306
