@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "envName": {
+      "value": "${AZURE_ENV_NAME}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "principalId": {
+      "value": "${AZURE_PRINCIPAL_ID}"
+    },
+    "resourceGroupName": {
+      "value": "${AZURE_RESOURCE_GROUP_NAME}"
+    },
+    "dbType": {
+      "value": "${DB_TYPE}"
+    },
+    "dbAdminUser": {
+      "value": "${DB_ADMIN_USER}"
+    },
+    "dbAdminPass": {
+      "value": "$(secretOrRandomPassword ${AZURE_KEY_VAULT_NAME} dbAdminPass)"
+    },
+    "appName": {
+      "value": "${APP_NAME}"
+    },
+    "appImage": {
+      "value": "${APP_IMAGE}"
+    },
+    "appAuthClientId": {
+      "value": "${APP_AUTH_CLIENT_ID}"
+    },
+    "appSecretKeyBase": {
+      "value": "$(secretOrRandomPassword ${AZURE_KEY_VAULT_NAME} ${APP_NAME}-appSecretKeyBase)"
+    },
+    "appDbPass": {
+      "value": "$(secretOrRandomPassword ${AZURE_KEY_VAULT_NAME} ${APP_NAME}-appDbPass)"
+    }
+  }
+}
