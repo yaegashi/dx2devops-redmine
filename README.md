@@ -25,6 +25,7 @@ It utilizes a variety of App Service features like app settings, persistent stor
 |`RAILS_IN_SERVICE`|Set `true` to start the rails server normally.  Otherwise it enters the maintenance mode.|
 |`SECRET_KEY_BASE`|Set a random string to encrypt rails session cookies.|
 |`DATABASE_URL`|Rails database configuration.  See [the guide for configuring a database](https://guides.rubyonrails.org/configuring.html#configuring-a-database)|
+|`DATABASE_FLEXIBLE`|Set `true` to use Azure Database for MySQL/PostgreSQL flexible server|
 
 ### Files and directories in a container
 
@@ -62,16 +63,20 @@ It causes the container to restart and make the Redmine app in service.
 
 `rmops` is a maintenance command available in the container.
 It has many sub commands and helps you with various tasks like
-the database initialization, the initial setup of Redmine app, backup/restore (planned), etc.
+the database initialization, the initial setup of Redmine app, backup/restore, etc.
 
 ```console
-root@6228b40cf3a8:~# rmops
+root@cb1e6cc8c0da:~# rmops
 Commands:
+  rmops dbcli           # Launch DB client
+  rmops dbinit          # Initialize database
+  rmops dbsql           # Generate SQL for initialization
+  rmops dump            # Dump site to backup
   rmops entrypoint      # Container entrypoint
   rmops help [COMMAND]  # Describe available commands or one specific command
   rmops passwd          # Reset user password
+  rmops restore         # Restore site from backup
   rmops setup           # Set up Redmine instance
-  rmops sql             # Generate SQL to initialize database
 ```
 
 The usage details will be explained as needed in the document.
@@ -95,74 +100,124 @@ Rails `configuration.yml` in `/home/site/wwwroot/config/configuration.yml`, and 
 
 ## Deploy to Azure App Service
 
-### Manual deployment steps
+### Quick start with Azure Developer CLI (recommended)
 
-1. Prepare a database instance for your Redmine app.
-Azure Database for MySQL/MariaDB/PostgreSQL are supported.
-2. Create an Azure App Service instance.
-Configure a Linux single container app and specify a container image from the following:
-   - `ghcr.io/yaegashi/dx2devops-redmine/redmine`
-   - `ghcr.io/yaegashi/dx2devops-redmine/redmica`
-3. Specify the following application settings:
+Using [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/overview) (azd),
+you can easily deploy Redmine/RedMica web sites using Azure App Service and Azure Database for MySQL/PostgreSQL.
+
+1. Create an azd environment and set some required variables in it.
+
+    ```console
+    $ azd env new myenv
+    $ azd env set DB_TYPE mysql
+    $ azd env set APP_NAME app
     ```
-    WEBSITES_ENABLE_APP_SERVICE_STORAGE=true
-    RAILS_ENV=production
-    RAILS_IN_SERVICE=false
-    SECRET_KEY_BASE=<very long random string>
-    DATABASE_URL=<database connection settings, see below>
+
+    - `DB_TYPE` ... `mysql` or `psql`
+    - `APP_NAME` ... App name to deploy.  If empty, it deploys only App Service Plan.
+    - `APP_IMAGE` ... (Optional) Choose one of the following images:
+        - `ghcr.io/yaegashi/dx2devops-redmine/redmine`
+        - `ghcr.io/yaegashi/dx2devops-redmine/redmica` (default)
+
+2. Log in to Azure with azd and deploy the resources.
+You have to select Azure subscription and region to deploy.
+
+    ```console
+    $ azd auth login
+    $ azd provision
+
+    Provisioning Azure resources (azd provision)
+    Provisioning Azure resources can take some time.
+
+    ? Select an Azure Subscription to use:  2. Pay-As-You-Go (58110a2c-a91b-4fdd-b8ea-3c16e75106ac)
+    (✓) Done: Retrieving locations...
+    ? Select an Azure location to use:  9. (Asia Pacific) Japan East (japaneast)
+    Subscription: Pay-As-You-Go (58110a2c-a91b-4fdd-b8ea-3c16e75106ac)
+    Location: Japan East
+
+      You can view detailed progress in the Azure Portal:
+      https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/%2Fsubscriptions%2F58110a2c-a91b-4fdd-b8ea-3c16e75106ac%2Fproviders%2FMicrosoft.Resources%2Fdeployments%2Fmyenv-1699051704
+
+      (✓) Done: Resource group: rg-myenv
+      (✓) Done: Resource group: rg-myenv
+      (✓) Done: App Service plan: myenv-6z627fx
+      (✓) Done: App Service: myenv-6z627fx-app
+
+    SUCCESS: Your application was provisioned in Azure in 6 minutes 49 seconds.
+    You can view the resources created under the resource group rg-myenv in Azure Portal:
+    https://portal.azure.com/#@/resource/subscriptions/58110a2c-a91b-4fdd-b8ea-3c16e75106ac/resourceGroups/rg-myenv/overview
     ```
-4. Restart the instance.  It gets up and running in the maintenance mode.
-5. Log into the instance using SSH on Azure Portal.
-    - Run `rmops sql` to see the SQL statement to initialize the database:
-        ```console
-        root@6228b40cf3a8:~# rmops sql
-        -- Database URL: mysql2://test1_7ee9e7cf%40test1-7ee9e7cf:CI8zeEf5r2%24%26%28r%249zQvNSA2%3EYh3lq7%7B7@test1-7ee9e7cf.mariadb.database.azure.com/test1_7ee9e7cf?encoding=utf8mb4&sslverify=true
-        -- Run the following command to connect to the database host as an admin user:
-        -- mysql -vv -u <admin-user> -p -h test1-7ee9e7cf.mariadb.database.azure.com --ssl
-        DROP DATABASE IF EXISTS `test1_7ee9e7cf`;
-        DROP USER IF EXISTS 'test1_7ee9e7cf'@'%';
-        CREATE USER 'test1_7ee9e7cf'@'%' IDENTIFIED BY 'CI8zeEf5r2$&(r$9zQvNSA2>Yh3lq7{7';
-        CREATE DATABASE IF NOT EXISTS `test1_7ee9e7cf` DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_520_ci`;
-        GRANT SELECT, LOCK TABLES, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, REFERENCES ON `test1_7ee9e7cf`.* TO 'test1_7ee9e7cf'@'%';
-        ```
-      Run `rmops dbinit` to initialize the database.  You will be asked for username and password of the DB admin.
-        ```console
-        root@6228b40cf3a8:~# rmops dbinit
-        Enter DB admin username: admin@test1-7ee9e7cf
-        Enter DB admin password: 
-        I, [2022-08-28T20:18:02.482132 #20]  INFO -- : Create database
-        I, [2022-08-28T20:18:02.482529 #20]  INFO -- : Run ["mysql", "-h", "test1-7ee9e7cf.mariadb.database.azure.com", "-P", "3306", "-u", "admin@test1-7ee9e7cf"]
-        I, [2022-08-28T20:18:02.640372 #20]  INFO -- : Done database initialization
-        ```
-    - Run `rmops setup` to run the database migration and do the initial setup of the Redmine app.
-      It will show initial password for `admin` user at last.  Don't forget to note this.
-        ```console
-        root@6228b40cf3a8:~# rmops setup
-        ...
-        I, [2022-06-05T18:52:11.206518 #72]  INFO -- : Enter Redmine at /redmine
-        I, [2022-06-05T18:52:31.645480 #72]  INFO -- : Reset password for user "admin"
-        I, [2022-06-05T18:52:31.647095 #72]  INFO -- : New password: "tLtLGWFK7VqzZ8TS"
-        ```
-6. Set `RAILS_IN_SERVICE=true` in the app settings.  It causes the instance to restart.
-7. Open the app web site with your browser.
 
-### Database connection configuration
+3. Click the link to the Azure Portal.
+It creates the following resources in the resource group `rg-${ENV_NAME}`.
 
-You have to specify the database connection configuration in `DATABASE_URL` in the app settings.
-See [the guide for configuring a database](https://guides.rubyonrails.org/configuring.html#configuring-a-database) for details.
+    > ![](assets/rg.png)
 
-`DATABASE_URL` example for MySQL or MariaDB servers (mysql2 adapter):
+    - Azure Database for MySQL or PostgreSQL (flexible server)
+    - Key vault
+    - Log Analytics workspace
+    - App Service plan: `${ENV_NAME}-xxxxxxx`
+    - App Service app: `${ENV_NAME}-xxxxxxx-${APP_NAME}`
 
-    mysql2://username%40servername:password@servername.mariadb.database.azure.com/dbname?encoding=utf8mb4&sslverify=true
+4. Open the web app resource in Azure Portal
+and browse the Web app site `https://${ENV_NAME}-xxxxxxx-${APP_NAME}.azurewebsites.net`.
+It will only show the text message `Maintenance mode`
+because `RAILS_IN_SERVICE` is initially set to `false` in the app settings.
 
-- Caveats for Azure Database products:
-    - `username@servername` (URL encoded) for the login name.
-    - `sslverify=true` is required to connect the server using SSL.
+    > ![](assets/maintenance.png)
 
-### Automation with Terraform
+5. Open the key vault resource in Azure Portal and get the secret value of `dbAdminPass`.
+You need it later to configure the database.
 
-Using the Terraform project in [terraform/test1](terraform/test1),
-you can easily deploy your Redmine app for testing along with a MariaDB instance on Azure.
+5. Open the Web app resource in Azure Portal and connect to the container via SSH.
+Run `rmops dbinit` to configure the database.
+
+    ```console
+    root@cb1e6cc8c0da:~# rmops dbinit
+    Enter DB admin username: adminuser
+    Enter DB admin password: 
+    I, [2023-11-03T23:02:50.950826 #16]  INFO -- : Create database
+    I, [2023-11-03T23:02:50.952936 #16]  INFO -- : Run ["mysql", "--ssl", "-h", "myenv-6z627fx.mysql.database.azure.com", "-P", "3306", "-u", "adminuser"]
+    I, [2023-11-03T23:02:51.366948 #16]  INFO -- : Done database initialization    
+    ```
+    - DB admin username ... `adminuser`
+    - DB admin password ... the secret value of `dbAdminPass` in the key vault
+
+6. Then run `rmops setup` to run the database migration.
+It displays the Redmine admin password at last.
+
+    ```console
+    root@cb1e6cc8c0da:~# rmops setup
+    I, [2023-11-03T23:03:56.144343 #18]  INFO -- : Enter directory at /redmine
+    I, [2023-11-03T23:03:56.154043 #18]  INFO -- : Remove ["files", "public/plugin_assets"]
+    I, [2023-11-03T23:03:56.154433 #18]  INFO -- : Create ["/home/site/wwwroot/files", "/home/site/wwwroot/config", "/home/site/wwwroot/plugins", "/home/site/wwwroot/public/themes", "/home/site/wwwroot/public/plugin_assets", "/home/site/wwwroot/staticsite", "/home/site/wwwroot/backups"]
+    I, [2023-11-03T23:03:56.184725 #18]  INFO -- : Symlink "/home/site/wwwroot/files" to "./files"
+    I, [2023-11-03T23:03:56.192230 #18]  INFO -- : Symlink "/home/site/wwwroot/public/plugin_assets" to "./public/plugin_assets"
+    I, [2023-11-03T23:03:56.196898 #18]  INFO -- : Enter directory at /redmine
+    I, [2023-11-03T23:03:56.200515 #18]  INFO -- : Run "rake db:migrate"
+    I, [2023-11-03T23:04:11.776417 #19]  INFO -- : Migrating to Setup (1)
+    == 1 Setup: migrating =========================================================
+    -- create_table("attachments", {:options=>"ENGINE=InnoDB", :force=>true, :id=>:integer})
+       -> 0.0801s    
+    ...
+    I, [2023-11-03T23:05:28.855548 #18]  INFO -- : Reset password for user "admin"
+    I, [2023-11-03T23:05:28.864872 #18]  INFO -- : New password: "XOXecy067zRDlFXW"
+    ```
+
+7. Open the Web app resource in Azure Portal and set `RAILS_IN_SERVICE` to `true` in the app settings.
+
+8. Open the web app site and you can see the Redmine site configured.
+Log in with the user `admin` and the password shown by `rmops setup`.
+
+9. You can populate more Web apps in the same azd environment with the same App Service plan and database
+by repeating setting `APP_NAME` and running `azd provision`:
+
+    ```console
+    $ azd env set APP_NAME app2
+    $ azd provision
+    $ azd env set APP_NAME app3
+    $ azd provision
+    ```
 
 ## Local development
 
@@ -199,6 +254,8 @@ Choose one of the supported profiles: `sqlite`, `mysql`, `mariadb`, `postgres`.
 
 - Support persistent storage (uploaded files, themes, plugins, etc.)
 - Support SSH remote shell and maintenance mode
+- Azure Developer CLI support
+- Azure Database for MySQL/PostgreSQL flexbile server support
 - `rmops` maintenance commands
     - dbcli: Launch database client
     - dbsql: Generate SQL to initialize database
