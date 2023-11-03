@@ -30,7 +30,7 @@ var xEnvName = '${envName}-${resourceToken}'
 var xResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : 'rg-${envName}'
 var xDbAdminUser = !empty(dbAdminUser) ? dbAdminUser : 'adminuser'
 var xAppName = '${xEnvName}-${appName}'
-var xAppImage = !empty(appImage) ? appImage : 'ghcr.io/yaegashi/dx2devops-redmine/redmica:v2.1.0-master'
+var xAppImage = !empty(appImage) ? appImage : 'ghcr.io/yaegashi/dx2devops-redmine/redmica:v2.3.2-master'
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: xResourceGroupName

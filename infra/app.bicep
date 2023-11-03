@@ -1,5 +1,5 @@
 param appName string
-param appImage string = 'ghcr.io/yaegashi/dx2devops-redmine/redmica:v2.1.0-master'
+param appImage string
 param appPlanId string
 param appAuthClientId string = ''
 @secure()
