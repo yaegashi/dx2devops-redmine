@@ -52,6 +52,15 @@ module kv 'kv.bicep' = {
   }
 }
 
+module log 'log.bicep' = {
+  scope: rg
+  name: 'log'
+  params: {
+    logName: xEnvName
+    location: location
+  }
+}
+
 module plan 'plan.bicep' = {
   scope: rg
   name: 'plan'
@@ -89,7 +98,7 @@ module rgtags 'rgtags.bicep' = {
   params: {
     name: rg.name
     location: rg.location
-    tags: union(rg.tags, dbType == 'mysql' ? mysql.outputs.tags : psql.outputs.tags)
+    tags: union(rg.tags, log.outputs.tags, dbType == 'mysql' ? mysql.outputs.tags : psql.outputs.tags)
   }
 }
 

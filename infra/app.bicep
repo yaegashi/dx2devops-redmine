@@ -54,10 +54,8 @@ resource app 'Microsoft.Web/sites@2022-03-01' = {
   resource appConfigLogs 'config' = {
     name: 'logs'
     properties: {
-      detailedErrorMessages: {
-        enabled: true }
-      failedRequestsTracing: {
-        enabled: true }
+      detailedErrorMessages: { enabled: true }
+      failedRequestsTracing: { enabled: true }
       httpLogs: {
         fileSystem: {
           enabled: true
@@ -96,5 +94,47 @@ resource app 'Microsoft.Web/sites@2022-03-01' = {
         }
       }
     }
+  }
+}
+
+resource logAnalytics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'logAnalytics'
+  scope: app
+  properties: {
+    logs: [
+      {
+        category: 'AppServiceHTTPLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServiceConsoleLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServiceAppLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServiceAuditLogs'
+        enabled: true
+      }
+      {
+        category: 'AppServiceIPSecAuditLogs'
+        enabled: true
+
+      }
+      {
+        category: 'AppServicePlatformLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+    #disable-next-line use-resource-id-functions
+    workspaceId: resourceGroup().tags.LOG_ANALYTICS_WORKSPACE_ID
   }
 }
