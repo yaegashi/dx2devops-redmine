@@ -17,11 +17,12 @@ apt-get install -y --no-install-recommends \
     postgresql-client-11 \
     postgresql-client-12 \
     postgresql-client-13 \
-    postgresql-client-14
+    postgresql-client-14 \
+    postgresql-client-15
 
 apt-get clean
 
-gem install thor
+gem install thor webrick
 
 echo "root:Docker!" | chpasswd
 cp /docker/build1/sshd_config /etc/ssh

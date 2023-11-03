@@ -14,7 +14,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE: "${{github.repository}}/redmica"
   REDMINE_REPOSITORY: redmica/redmica
-  REDMINE_REF: v2.1.0
+  REDMINE_REF: v2.3.2
 jobs:
   build:
     runs-on: ubuntu-20.04

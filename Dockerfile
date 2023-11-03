@@ -1,4 +1,4 @@
-FROM ruby:3-bullseye
+FROM ruby:3-bookworm
 
 ENV RAILS_ENV production
 ENV RAILS_LOG_TO_STDOUT true
