@@ -221,7 +221,7 @@ by repeating setting `APP_NAME` and running `azd provision`:
 
 ## Local development
 
-[docker-compose.yml](docker-compose.yml) is provided
+[compose.yml](docker-compose.yml) is provided
 so that you can easily build and test Redmine container images.
 Using a devcontainer is also recommended.
 
@@ -232,20 +232,20 @@ You can clone it from the official repository by either of the following command
 2. Copy file [`docker.env.example`](docker.env.example) to `docker.env`.
 3. Copy file [`.env.example`](.env.example) to `.env` and set `COMPOSE_PROFILES` in it.
 Choose one of the supported profiles: `sqlite`, `mysql`, `mariadb`, `postgres`.
-4. Run `docker-compose build` to build a container image.
-5. Run `docker-compose up -d` to start containers in the background.
+4. Run `docker compose build` to build a container image.
+5. Run `docker compose up -d` to start containers in the background.
     * The redmine container creates `./data/wwwroot` for `/home/site/wwwroot` volume.
     * The redmine container enters the maintenance mode because `RAILS_IN_SERVICE=false` in `docker.env`.
     * The database container creates `./data/mysql` etc. for the database volume.
 6. Do the following initial setups in the container:
     1. Invoke a shell in the redmine container by either of the following methods:
-        * Run `docker-compose exec redmine-<profile> bash`
+        * Run `docker compose exec redmine-<profile> bash`
         * Run `ssh root@localhost -p 3333`.  The password is `Docker!`.
     2. Run `rmops dbinit`.  The password is `secret`.
     3. Run `rmops setup`.  Redmine admin's password will be shown.
     4. Exit from the shell.
 7. Update `RAILS_IN_SERVICE=true` in `docker.env`.
-8. Run `docker-compose up -d` again to restart the redmine container.
+8. Run `docker compose up -d` again to restart the redmine container.
 9. Open http://localhost:8080 with your web browser to test the Redmine app.
 
 ## Development roadmap

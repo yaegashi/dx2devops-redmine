@@ -1,6 +1,7 @@
 version: '3.9'
 
 x-redmine: &redmine
+  container_name: redmine-app
   image: redmine
   build: .
   env_file:
@@ -40,6 +41,7 @@ services:
     profiles: [postgres]
 
   mysql:
+    container_name: redmine-db
     image: mysql:latest
     environment:
       MYSQL_ROOT_PASSWORD: secret
@@ -48,6 +50,7 @@ services:
     profiles: [mysql]
 
   mariadb:
+    container_name: redmine-db
     image: mariadb:latest
     environment:
       MARIADB_ROOT_PASSWORD: secret
@@ -56,6 +59,7 @@ services:
     profiles: [mariadb]
 
   postgres:
+    container_name: redmine-db
     image: postgres:latest
     environment:
       POSTGRES_PASSWORD: secret
