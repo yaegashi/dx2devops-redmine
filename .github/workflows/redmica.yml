@@ -15,9 +15,11 @@ env:
   IMAGE: "${{github.repository}}/redmica"
   REDMINE_REPOSITORY: redmica/redmica
   REDMINE_REF: v2.3.2
+  EASYAUTH_REPOSITORY: yaegashi/redmine_easyauth
+  EASYAUTH_REF: master
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       -
         name: Checkout repository
@@ -29,6 +31,13 @@ jobs:
           repository: "${{env.REDMINE_REPOSITORY}}"
           ref: "${{env.REDMINE_REF}}"
           path: redmine
+      -
+        name: Checkout redmine_easyauth plugin
+        uses: actions/checkout@v3
+        with:
+          repository: "${{env.EASYAUTH_REPOSITORY}}"
+          ref: "${{env.EASYAUTH_REF}}"
+          path: redmine/plugins/redmine_easyauth
       -
         name: Docker meta
         id: meta
