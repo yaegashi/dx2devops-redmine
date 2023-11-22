@@ -17,6 +17,7 @@ module RMOps::Utils
 
   def symlink(src, dst, **opts)
     logger.info "Symlink #{src.inspect} to #{dst.inspect}"
+    FileUtils.rmtree(File.join(dst, File.basename(src))) if opts[:force] && File.directory?(dst)
     FileUtils.symlink(src, dst, **opts)
   end
 
