@@ -36,6 +36,7 @@ resource db 'Microsoft.DBforMySQL/flexibleServers@2021-12-01-preview' = {
   }
 }
 
+output dbId string = db.id
 output tags object = {
   DB_TYPE: 'mysql'
   DB_SERVER_NAME: db.name

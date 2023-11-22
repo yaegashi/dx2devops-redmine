@@ -30,7 +30,7 @@ var xEnvName = '${envName}-${resourceToken}'
 var xResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : 'rg-${envName}'
 var xDbAdminUser = !empty(dbAdminUser) ? dbAdminUser : 'adminuser'
 var xAppName = '${xEnvName}-${appName}'
-var xAppImage = !empty(appImage) ? appImage : 'ghcr.io/yaegashi/dx2devops-redmine/redmica:v2.3.2-master'
+var xAppImage = !empty(appImage) ? appImage : 'ghcr.io/yaegashi/dx2devops-redmine/redmica'
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: xResourceGroupName
@@ -117,7 +117,20 @@ module app 'app.bicep' = if (!empty(appName)) {
   }
 }
 
+var portalLink = 'https://portal.azure.com/${tenant().tenantId}'
+var appId = app.outputs.appId
+var dbId = dbType == 'mysql' ? mysql.outputs.dbId : psql.outputs.dbId
+
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_KEY_VAULT_NAME string = kv.outputs.name
 output AZURE_KEY_VAULT_URI string = kv.outputs.uri
+output AZURE_APP_NAME string = xAppName
+output AZURE_APP_LINK string = 'https://${xAppName}.azurewebsites.net'
+output AZURE_APP_RESOURCE_ID string = appId
+output AZURE_APP_RESOURCE_LINK string = '${portalLink}#resource${appId}'
+output AZURE_APP_CONSOLE_LINK string = 'https://${xAppName}.scm.azurewebsites.net/webssh/host'
+output AZURE_DB_RESOURCE_ID string = dbId
+output AZURE_DB_RESOURCE_LINK string = '${portalLink}#resource${dbId}'
+output AZURE_DB_ADMIN_USER string = xDbAdminUser
+output AZURE_DB_ADMIN_PASS_LINK string = '${portalLink}#asset/Microsoft_Azure_KeyVault/Secret/${kv.outputs.uri}secrets/dbAdminPass'

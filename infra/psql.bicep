@@ -36,6 +36,7 @@ resource db 'Microsoft.DBforPostgreSQL/flexibleServers@2022-12-01' = {
   }
 }
 
+output dbId string = db.id
 output tags object = {
   DB_TYPE: 'psql'
   DB_SERVER_NAME: db.name

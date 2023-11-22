@@ -1,3 +1,35 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
 name: dx2devops-redmine
+hooks:
+  postprovision:
+    shell: sh
+    continueOnError: false
+    interactive: true
+    run: |
+      cat <<EOF
+
+      Congratulations!  The Redmine app has been successfully deployed to Azure.
+
+      App link (the service initially starts in maintenance mode):
+      ${AZURE_APP_LINK}
+
+      App console link:
+      ${AZURE_APP_CONSOLE_LINK}
+
+      App resource link in the Azure Portal:
+      ${AZURE_APP_RESOURCE_LINK}
+
+      DB admin username:
+      ${AZURE_DB_ADMIN_USER}
+
+      DB admin password link in the Azure Portal:
+      ${AZURE_DB_ADMIN_PASS_LINK}
+
+      Run the following commands on the app console to set up the Redmine app:
+      rmops dbinit       # Use the DB admin username and password above
+      rmops setup        # The initial password for the Redmine admin will be shown
+      rmops passwd admin # Use this in case you forget the Redmine admin's password
+
+      Set RAILS_IN_SERVICE=true in the app settings to exit maintenance mode.
+      EOF

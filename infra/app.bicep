@@ -138,3 +138,5 @@ resource logAnalytics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     workspaceId: resourceGroup().tags.LOG_ANALYTICS_WORKSPACE_ID
   }
 }
+
+output appId string = app.id
