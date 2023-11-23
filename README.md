@@ -115,7 +115,7 @@ you can easily deploy Redmine/RedMica web sites using Azure App Service and Azur
 
     - `DB_TYPE` ... `mysql` or `psql`
     - `APP_NAME` ... App name to deploy.  If empty, it deploys only App Service Plan.
-    - `APP_IMAGE` ... (Optional) Choose one of the following images:
+    - `APP_IMAGE` ... (Optional) Choose one from the following images:
         - `ghcr.io/yaegashi/dx2devops-redmine/redmine`
         - `ghcr.io/yaegashi/dx2devops-redmine/redmica` (default)
 
@@ -143,34 +143,53 @@ You have to select Azure subscription and region to deploy.
       (✓) Done: App Service plan: myenv-6z627fx
       (✓) Done: App Service: myenv-6z627fx-app
 
+    Congratulations!  The Redmine app has been successfully deployed to Azure.
+
+    App link (the service initially starts in maintenance mode):
+    https://myenv-6z627fx-app1.azurewebsites.net
+
+    App console link:
+    https://myenv-6z627fx-app1.scm.azurewebsites.net/webssh/host
+
+    App resource link in the Azure Portal:
+    https://portal.azure.com/5f534ef1-2ab5-4f8e-bf2e-4886cd321c8e#resource/subscriptions/58110a2c-a91b-4fdd-b8ea-3c16e75106ac/resourceGroups/rg-myenv/providers/Microsoft.Web/sites/myenv-6z627fx-app1
+
+    DB admin username:
+    adminuser
+
+    DB admin password link in the Azure Portal:
+    https://portal.azure.com/5f534ef1-2ab5-4f8e-bf2e-4886cd321c8e#asset/Microsoft_Azure_KeyVault/Secret/https://myenv-6z627fx.vault.azure.net/secrets/dbAdminPass
+
+    Run the following commands on the app console to set up the Redmine app:
+    rmops dbinit       # Use the DB admin username and password above
+    rmops setup        # The initial password for the Redmine admin will be shown
+    rmops passwd admin # Use this in case you forget the Redmine admin's password
+
+    Set RAILS_IN_SERVICE=true in the app settings to exit maintenance mode.
+
     SUCCESS: Your application was provisioned in Azure in 6 minutes 49 seconds.
     You can view the resources created under the resource group rg-myenv in Azure Portal:
     https://portal.azure.com/#@/resource/subscriptions/58110a2c-a91b-4fdd-b8ea-3c16e75106ac/resourceGroups/rg-myenv/overview
     ```
 
-3. Click the link to the Azure Portal.
-It creates the following resources in the resource group `rg-${ENV_NAME}`.
+3. Open the resource group link in the last line.  You can find the following resources deployed by running `azd provision`:
 
     > ![](assets/rg.png)
 
-    - Azure Database for MySQL or PostgreSQL (flexible server)
-    - Key vault
-    - Log Analytics workspace
+    - Azure Database for MySQL or PostgreSQL (flexible server): `${ENV_NAME}-xxxxxxx`
+    - Key vault: `${ENV_NAME}-xxxxxxx`
+    - Log Analytics workspace: `${ENV_NAME}-xxxxxxx`
     - App Service plan: `${ENV_NAME}-xxxxxxx`
     - App Service app: `${ENV_NAME}-xxxxxxx-${APP_NAME}`
 
-4. Open the web app resource in Azure Portal
-and browse the Web app site `https://${ENV_NAME}-xxxxxxx-${APP_NAME}.azurewebsites.net`.
-It will only show the text message `Maintenance mode`
+4. Open `App link` that looks like `https://${ENV_NAME}-xxxxxxx-${APP_NAME}.azurewebsites.net`.
+It will only display the text message `Maintenance mode`
 because `RAILS_IN_SERVICE` is initially set to `false` in the app settings.
 
     > ![](assets/maintenance.png)
 
-5. Open the key vault resource in Azure Portal and get the secret value of `dbAdminPass`.
-You need it later to configure the database.
-
-5. Open the Web app resource in Azure Portal and connect to the container via SSH.
-Run `rmops dbinit` to configure the database.
+5. Open `App console link` to connect into the container via SSH.
+Run `rmops dbinit` to initialize the database.
 
     ```console
     root@cb1e6cc8c0da:~# rmops dbinit
@@ -181,10 +200,12 @@ Run `rmops dbinit` to configure the database.
     I, [2023-11-03T23:02:51.366948 #16]  INFO -- : Done database initialization    
     ```
     - DB admin username ... `adminuser`
-    - DB admin password ... the secret value of `dbAdminPass` in the key vault
+    - DB admin password ... the secret value of `dbAdminPass` in the key vault.
+      Open `DB admin password link in the Azure Portal` then copy/paste the secret value.
+        > ![](assets/secret.png)
 
-6. Then run `rmops setup` to run the database migration.
-It displays the Redmine admin password at last.
+6. Run `rmops setup` to perform the database migration.
+It displays the Redmine admin password in the end of output.
 
     ```console
     root@cb1e6cc8c0da:~# rmops setup
@@ -204,12 +225,12 @@ It displays the Redmine admin password at last.
     I, [2023-11-03T23:05:28.864872 #18]  INFO -- : New password: "XOXecy067zRDlFXW"
     ```
 
-7. Open the Web app resource in Azure Portal and set `RAILS_IN_SERVICE` to `true` in the app settings.
+7. Open `App resource link in the Azure Portal` and set `RAILS_IN_SERVICE` to `true` in the app settings.
 
-8. Open the web app site and you can see the Redmine site configured.
+8. Open `App link` and you can see the Redmine site configured.
 Log in with the user `admin` and the password shown by `rmops setup`.
 
-9. You can populate more Web apps in the same azd environment with the same App Service plan and database
+9. You can populate more Redmine apps in the same azd environment with the same App Service plan and database
 by repeating setting `APP_NAME` and running `azd provision`:
 
     ```console
@@ -248,24 +269,24 @@ Choose one of the supported profiles: `sqlite`, `mysql`, `mariadb`, `postgres`.
 8. Run `docker compose up -d` again to restart the redmine container.
 9. Open http://localhost:8080 with your web browser to test the Redmine app.
 
-## Development roadmap
+## Roadmap
 
-### Done
+### Completed
 
-- Support persistent storage (uploaded files, themes, plugins, etc.)
-- Support SSH remote shell and maintenance mode
+- Persistent storage support (uploaded files, themes, plugins, etc.)
+- SSH remote shell and maintenance mode support
 - Azure Developer CLI support
-- Azure Database for MySQL/PostgreSQL flexbile server support
+- Azure Database for MySQL/PostgreSQL flexible server support
+- Azure App Service Easy Auth support (https://github.com/yaegashi/redmine_easyauth)
 - `rmops` maintenance commands
-    - dbcli: Launch database client
-    - dbsql: Generate SQL to initialize database
-    - dbinit: Database initialization
-    - setup: Redmine initial setup
-    - passwd: Redmine user password reset
-    - dump: Dump to backup
-    - restore: Restore from backup
+    - dbcli: Launches database client
+    - dbsql: Generates SQL to initialize database
+    - dbinit: Initializes database
+    - setup: Performs Redmine initial setup
+    - passwd: Resets Redmine user password
+    - dump: Dumps to backup
+    - restore: Restores from backup
 
-### Todo
+### Upcoming
 
-- Support sending emails from the App Service environment
-- Support EasyAuth integration to Redmine user authentication
+- Email sending support from the App Service environment
