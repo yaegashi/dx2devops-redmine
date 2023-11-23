@@ -4,6 +4,7 @@ targetScope = 'subscription'
 @maxLength(64)
 param envName string
 param location string
+param resourceToken string = ''
 param resourceGroupName string = ''
 param principalId string = ''
 
@@ -23,10 +24,10 @@ param appSecretKeyBase string = ''
 @secure()
 param appDbPass string = ''
 
-var resourceToken = take(toLower(uniqueString(subscription().id, envName, location)), 7)
 var tags = { 'azd-env-name': envName }
 
-var xEnvName = '${envName}-${resourceToken}'
+var xResourceToken = !empty(resourceToken) ? resourceToken : take(toLower(uniqueString(subscription().id, envName, location)), 7)
+var xEnvName = '${envName}-${xResourceToken}'
 var xResourceGroupName = !empty(resourceGroupName) ? resourceGroupName : 'rg-${envName}'
 var xDbAdminUser = !empty(dbAdminUser) ? dbAdminUser : 'adminuser'
 var xAppName = '${xEnvName}-${appName}'
